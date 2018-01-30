@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Ask Elon</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="elonmuskfav.png"/>
+    <style media="screen">
+    body,html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+    }
+      .askelon {
+        width: 100%;
+        height: auto;
+      }
+      .resultbox {
+        width: 100%;
+        height: auto;
+      }
+      .resultbox div{
+        float: left;
+      }
+      .calculatorname {
+        width: 0%;
+        height: 200px;
+        background-color: #3d6fc6;
+      }
+      .calculatorname p {
+        color: white;
+        text-align: center;
+        font-size: 44px;
+        padding-top: 25px;
+      }
+      .calculatorname p span {
+        border-bottom: 2px solid white;
+      }
+      .output {
+        width: 100%;
+        height: 200px;
+        background-color: #3d6fc6;
+      }
+      .output p {
+        text-align: center;
+        color: white;
+      }
+      .numberbox div {
+        width: 16.65%;
+        height: 58.5px;/* BUG: 67px */
+        color:  black;
+        float: left;
+        text-align: center;
+        font-size: 36px;
+        padding-top: 20px;
+        /* BUG: border: 1px solid #f2f2f2; */
+      }
+      .one:hover, .two:hover, .three:hover, .four:hover, .five:hover, .six:hover, .seven:hover, .eight:hover, .nine:hover, .zero:hover, .dot:hover, .pi:hover, .addition:hover, .subtraction:hover, .multiply:hover, .divide:hover  {
+        background-color: #e6e6e6 !important;
+        color: #3d6fc6 !important;
+      }
+      .modulus:hover {
+        background-color: #e6e6e6 !important;
+        color: #3d6fc6 !important;
+      }
+      .equal {
+        background-color: #3d6fc6;
+      }
+      .equal:hover {
+        background-color: #3462b2 !important;
+      }
+      .clear {
+        color: red !important;
+      }
+      .clear:hover {
+        background-color: red !important;
+        color: white !important;
+      }
+      .backspace:hover {
+        background-color: #e6e6e6 !important;
+        color: red !important;
+        font-weight: bold;
+      }
+      .root:hover, .pow:hover, .sin:hover, .cos:hover, .tan:hover, .bracketstart:hover, .bracketend:hover, .camma:hover, .log:hover, .empty:hover {
+        background-color: #618ad1;
+        color: white;
+      }
+      .titlejs {
+        text-align: center;
+        width: 100%;
+        height: auto;
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body onkeypress="keypressed();backspacered();enterkey();on();" onkeydown="keyboardinput(event.keyCode);" onkeyup="keyboardinputhover(event.keyCode);">
+    <div class="askelon">
+      <div class="titlejs">
+        ASK ELON
+      </div>
+      <div class="resultbox">
+        <div class="calculatorname">
+          <p><span></span></p>
+        </div>
+        <div class="output">
+          <p id="key" style="font-size:36px;">0</p>
+          <p id="keyout" style="font-size:44px;font-weight: bold;">0</p>
+        </div>
+      </div>
+      <div class="numberbox">
+        <div class="root" onclick="root()">√</div><!-- BUG: √ -->
+        <div onclick="askelon('(')" class="bracketstart">(</div>
+        <div onclick="clearcalc();allclearswitch();" id="allclear" class="clear">AC</div>
+        <div onclick="backspace()" onmouseout="backspaceOnChange()" class="backspace">⌫</div> <!-- BUG: ⌦ ⌫ -->
+        <div onclick="askelon('%')" class="modulus">%</div>
+        <div onclick="askelon('/')" class="divide">/</div>
+        <div onclick="power()" class="pow">X<sup>2</sup></div>
+        <div onclick="askelon(')')" class="bracketend">)</div>
+        <div onclick="askelon(7);allclear();" onchange="backspaceOnChange()" class="seven">7</div>
+        <div onclick="askelon(8);allclear();" class="eight">8</div>
+        <div onclick="askelon(9);allclear();" class="nine">9</div>
+        <div onclick="askelon('*');" id="multiply" class="multiply">*</div>
+        <div onclick="sinT()" class="sin">sin(x)</div>
+        <div onclick="log()" class="log">log(X)</div>
+        <div onclick="askelon(4);allclear();" class="four">4</div>
+        <div onclick="askelon(5);allclear();" class="five">5</div>
+        <div onclick="askelon(6);allclear();" class="six">6</div>
+        <div onclick="askelon('-')" class="subtraction">-</div>
+        <div onclick="cosT()" class="cos">cos(x)</div>
+        <div class="empty"><</div>
+        <div onclick="askelon(1);allclear();" class="one">1</div>
+        <div onclick="askelon(2);allclear();" class="two">2</div>
+        <div onclick="askelon(3);allclear();" class="three">3</div>
+        <div onclick="askelon('+')" class="addition">+</div>
+        <div onclick="tanT()" class="tan">tan(x)</div>
+        <div onclick="askelon(',')" class="camma">,</div>
+        <div onclick="askelon('pi')" class="pi">π</div>
+        <div onclick="askelon(0);allclear();" class="zero">0</div>
+        <div onclick="askelon('dot')" class="dot">.</div>
+        <div onclick="equalcalc()" style="font-size:35px;color:white;" class="equal">=</div>
+      </div>
+    </div>
+
+    <!-- BUG: javascript code -->
+    <script type="text/javascript">
+      var key = document.getElementById('key');
+      var keyout = document.getElementById('keyout');
+      function askelon(keyvalue) {
+        if ( key.innerHTML == 0 ) {
+          key.innerHTML = "";
+        }
+        //for All clear RED color
+        document.getElementsByClassName('clear')[0].style.color = "red";
+        if ( keyvalue === 1 ){
+          key.innerHTML = key.innerHTML + 1;
+        }else if ( keyvalue ===  2 ) {
+          key.innerHTML = key.innerHTML + 2;
+        }else if ( keyvalue ===  3 ) {
+          key.innerHTML = key.innerHTML + 3;
+        }else if ( keyvalue ===  4 ) {
+          key.innerHTML = key.innerHTML + 4;
+        }else if ( keyvalue ===  5 ) {
+          key.innerHTML = key.innerHTML + 5;
+        }else if( keyvalue === 6 ) {
+          key.innerHTML = key.innerHTML + 6;
+        }else if( keyvalue === 7 ) {
+          key.innerHTML = key.innerHTML + 7;
+        }else if( keyvalue === 8 ) {
+          key.innerHTML = key.innerHTML + 8;
+        }else if( keyvalue === 9 ) {
+          key.innerHTML = key.innerHTML + 9;
+        }else if( keyvalue === 0 ) {
+          key.innerHTML = key.innerHTML + 0;
+        }else if( keyvalue === 'dot' ) {
+          key.innerHTML = key.innerHTML +'.';
+        }else if( keyvalue === '+' ) {
+          key.innerHTML = key.innerHTML + '+';
+        }else if( keyvalue === '-' ) {
+          key.innerHTML = key.innerHTML + '-';
+        }else if( keyvalue === '*' ) {
+          key.innerHTML = key.innerHTML + '*';
+        }else if( keyvalue === '/' ) {
+          key.innerHTML = key.innerHTML + '/';
+        }else if ( keyvalue === "pi" ) {
+          key.innerHTML = key.innerHTML + Math.PI;
+        }else if ( keyvalue === "%" ) {
+          key.innerHTML = key.innerHTML + "%";
+        }else if ( keyvalue === "(" ) {
+          key.innerHTML = key.innerHTML + "(";
+        }else if ( keyvalue === ")" ) {
+          key.innerHTML = key.innerHTML + ")";
+        }else if ( keyvalue === "," ) {
+          key.innerHTML = key.innerHTML + ",";
+        }
+      }
+      //dynamic keyboard input function
+      function keyboardinput(event) {
+        if ( key.innerHTML === "0" ) {
+          document.getElementsByClassName('clear')[0].innerHTML = "AC";
+        }
+        if ( key.innerHTML != " 0" ) {
+          document.getElementsByClassName('clear')[0].innerHTML = "C";
+        }
+      var keycode = event;
+      if ( event == 48 ) {
+        document.getElementsByClassName('zero')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('zero')[0].style.color = "#3d6fc6";
+      }else if( event == 49 ) {
+        document.getElementsByClassName('one')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('one')[0].style.color = "#3d6fc6";
+      }else if ( event == 50 ) {
+        document.getElementsByClassName('two')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('two')[0].style.color = "#3d6fc6";
+      }else if ( event == 51 ) {
+        document.getElementsByClassName('three')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('three')[0].style.color = "#3d6fc6";
+      }else if ( event == 52 ) {
+        document.getElementsByClassName('four')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('four')[0].style.color = "#3d6fc6";
+      }else if ( event == 53 ) {
+        document.getElementsByClassName('five')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('five')[0].style.color = "#3d6fc6";
+      }else if ( event == 54 ) {
+        document.getElementsByClassName('six')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('six')[0].style.color = "#3d6fc6";
+      }else if ( event == 55 ) {
+        document.getElementsByClassName('seven')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('seven')[0].style.color = "#3d6fc6";
+      }else if ( event == 56 ) {
+        document.getElementsByClassName('eight')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('eight')[0].style.color = "#3d6fc6";
+      }else if ( event == 57 ) {
+        document.getElementsByClassName('nine')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('nine')[0].style.color = "#3d6fc6";
+      }else if ( event == 8 ) {
+        document.getElementsByClassName('backspace')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('backspace')[0].style.color = "red";
+        document.getElementsByClassName('backspace')[0].style.fontWeight = "bold";
+      }else if ( event == 46 ) {
+        document.getElementsByClassName('clear')[0].style.backgroundColor = "red";
+        document.getElementsByClassName('clear')[0].style.color = "white";
+        key.innerHTML = "0";
+        keyout.innerHTML = "0";
+        document.getElementsByClassName('clear')[0].innerHTML = "AC";
+      }else if ( event == 13 ) {
+        document.getElementsByClassName('equal')[0].style.backgroundColor = "#3462b2";
+        document.getElementsByClassName('equal')[0].style.color = "white";
+        equalcalc();
+      }else if ( event == 187 ) {
+        document.getElementsByClassName('addition')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('addition')[0].style.color = "#3d6fc6";
+      }else if ( event == 189 ) {
+        document.getElementsByClassName('subtraction')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('subtraction')[0].style.color = "#3d6fc6";
+      }else if ( event == 42 ) {
+        //document.getElementsByClassName('multiply')[0].style.backgroundColor = "red";
+        //document.getElementsByClassName('multiply')[0].style.color = "#3d6fc6";
+      }else if ( event == 191 ) {
+        document.getElementsByClassName('divide')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('divide')[0].style.color = "#3d6fc6";
+      }else if ( event == 190 ) {
+        document.getElementsByClassName('dot')[0].style.backgroundColor = "#e6e6e6";
+        document.getElementsByClassName('dot')[0].style.color = "#3d6fc6";
+      }
+     }
+       //dynamic keyboard hover effect
+       function keyboardinputhover(event) {
+       var keycode = event;
+        if ( event == 48 ) {
+        document.getElementsByClassName('zero')[0].style.backgroundColor = "white";
+        document.getElementsByClassName('zero')[0].style.color = "black";
+       }else if ( event == 49 ) {
+         document.getElementsByClassName('one')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('one')[0].style.color = "black";
+       }else if ( event == 50 ) {
+         document.getElementsByClassName('two')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('two')[0].style.color = "black";
+       }else if ( event == 51 ) {
+         document.getElementsByClassName('three')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('three')[0].style.color = "black";
+       }else if ( event == 52 ) {
+         document.getElementsByClassName('four')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('four')[0].style.color = "black";
+       }else if ( event == 53 ) {
+         document.getElementsByClassName('five')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('five')[0].style.color = "black";
+       }else if ( event == 54 ) {
+         document.getElementsByClassName('six')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('six')[0].style.color = "black";
+       }else if ( event == 55 ) {
+         document.getElementsByClassName('seven')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('seven')[0].style.color = "black";
+       }else if ( event == 56 ) {
+         document.getElementsByClassName('eight')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('eight')[0].style.color = "black";
+       }else if ( event == 57 ) {
+         document.getElementsByClassName('nine')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('nine')[0].style.color = "black";
+       }else if ( event == 8 ) {
+         document.getElementsByClassName('backspace')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('backspace')[0].style.color = "black";
+         document.getElementsByClassName('backspace')[0].style.fontWeight = "bold";
+         backspace();//there is a error occur in backspacec button when without calling this function
+       }else if ( event == 46 ) {
+         document.getElementsByClassName('clear')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('clear')[0].style.color = "red";
+       }else if ( event == 13 ) {
+         document.getElementsByClassName('equal')[0].style.backgroundColor = "#3d6fc6";
+         document.getElementsByClassName('equal')[0].style.color = "white";
+         if ( keyout.innerHTML === "0" ) {
+           key.style.color = "red";
+           keyout.innerHTML = "Invalid expression";
+         }
+         //equal values
+         equalcalc();
+       }else if ( event == 187 ) {
+         document.getElementsByClassName('addition')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('addition')[0].style.color = "black";
+       }else if ( event == 189 ) {
+         document.getElementsByClassName('subtraction')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('subtraction')[0].style.color = "black";
+       }else if ( event == 42 ) {
+         //document.getElementsByClassName('multiply')[0].style.backgroundColor = "white";
+         //document.getElementsByClassName('multiply')[0].style.color = "black";
+       }else if ( event == 191 ) {
+         document.getElementsByClassName('divide')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('divide')[0].style.color = "black";
+       }else if ( event == 190 ) {
+         document.getElementsByClassName('dot')[0].style.backgroundColor = "white";
+         document.getElementsByClassName('dot')[0].style.color = "black";
+       }
+     }
+      //all clear function
+      function allclear() {
+        var allclear = document.getElementById('allclear');
+        if ( (key.innerHTML != 0) || (keyout.innerHTML != 0) ) {
+          allclear.innerHTML = "C";
+        }else {
+          allclear.innerHTML = "AC";
+        }
+      }
+      //all clear name switch function
+      function allclearswitch() {
+        var allclear = document.getElementById('allclear');
+        allclear.innerHTML = "AC";
+      }
+      //clear button function in calculator
+      function clearcalc() {
+        key.innerHTML = 0;
+        keyout.innerHTML = 0;
+        key.style.color = "white";
+      }
+      //equal = opeartor function
+      function equalcalc() {
+         keyout.innerHTML = "=" + " " + eval(key.innerHTML);
+         if ( key.innerHTML === "0" && keyout.innerHTML === "= 0" ) {
+           document.getElementById('allclear').innerHTML = "C";
+         }
+        }
+      //keyboard value of key pressed
+      function keypressed() {
+        if ( key.innerHTML === "0" ) {
+          key.innerHTML = "";
+        }
+        if ( event.keyCode == 13 ) {
+          return false;
+        }
+        if ( event.keyCode == 13 && key.innerHTML == "0" && key.innerHTML == "0") {
+          keyout.innerHTML = "work";
+        }
+        key.innerHTML = key.innerHTML + event.key;
+      }
+      //backspace button function
+      function backspace() {
+        if ( key.innerHTML === "0" ) {
+          key.style.color = "red";
+        }else if ( key.innerHTML !== "0" ) {
+          key.style.color = "white";
+        }
+        var keydata = key.innerHTML;
+        var keytrim = keydata.substr( 0 , keydata.length - 1);
+        key.innerHTML = keytrim;
+        if (key.innerHTML == "") {
+          key.innerHTML = "0";
+        }
+        if ( key.innerHTML === "0" && keyout.innerHTML === "0" ) {
+          document.getElementById('allclear').innerHTML = "AC";
+        }
+      }
+      //backspace red color value remove function
+      function backspacered() {
+        if ( key.innerHTML !== "0" ) {
+          key.style.color = "white";
+        }
+      }
+      //onchange event function for backspace
+      function backspaceOnChange() {
+          key.style.color = "white";
+      }
+      //special funtions
+      //square root function
+      function root() {
+        var special = document.getElementsByClassName('root')[0];
+        special.innerHTML ="Root" + " " + "(x)";
+        key.innerHTML = "Math.sqrt(";
+        if ( keyout.innerHTML != "0" ) {
+          special.innerHTML = "√";
+        }
+      }
+      //power function
+      function power() {
+        var special = document.getElementsByClassName('pow')[0];
+        special.innerHTML = "Pass" + " " + "(x,y)";
+        key.innerHTML = "Math.pow(";
+        if ( keyout.innerHTML != "0" ) {
+          special.innerHTML = "X<sup>2</sup>";
+        }
+      }
+      //sin() sinT function
+      function sinT() {
+        /*key.innerHTML = "Degree : ";
+        var sinTdata = key.innerHTML.length;
+        var sinT = sinTdata.substr( 9, sinTdata);
+        var sindatatype = parseInt(sinT);
+        //keyout.innerHTML = Math.sin( sindatatype * Math.PI / 180);
+        alert(typeof(sindatatype));*/
+        var sin = prompt("Enter Your Cos(x) Degree","");
+        keyout.innerHTML = Math.cos( sin * Math.PI / 180);
+      }
+      //cos() sinT function
+      function cosT() {
+        var cos = prompt("Enter Your Cos(x) Degree","");
+        keyout.innerHTML = Math.cos( cos * Math.PI / 180);
+      }
+      //tan() sinT function
+      function tanT() {
+        var tan = prompt("Enter Your tan(x) Degree","");
+        keyout.innerHTML = Math.tan( tan * Math.PI / 180);
+      }
+      //log function
+      function log() {
+        key.innerHTML = "Math.log(";
+      }
+      //testing purpose
+      function on() {
+        alert(event.keyCode);
+      }
+      //fuck it's almost 4AM -.-
+    </script>
+  </body>
+</html>
